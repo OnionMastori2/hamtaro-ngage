@@ -1,0 +1,403 @@
+[
+ {
+  "mem": "/tmp/btn/status.bin",
+  "layer": "bg1",
+  "rect": [
+   24,
+   147,
+   15,
+   14
+  ],
+  "button": "A"
+ },
+ {
+  "mem": "/tmp/btn/status.bin",
+  "layer": "bg1",
+  "rect": [
+   91,
+   147,
+   15,
+   14
+  ],
+  "button": "B"
+ },
+ {
+  "mem": "/tmp/btn/dress.bin",
+  "layer": "obj",
+  "rect": [
+   73,
+   137,
+   15,
+   15
+  ],
+  "button": "A",
+  "stroke": 4,
+  "strokes": [
+   4,
+   3
+  ],
+  "depth": 2
+ },
+ {
+  "mem": "/tmp/btn/dress.bin",
+  "layer": "obj",
+  "rect": [
+   117,
+   137,
+   15,
+   15
+  ],
+  "button": "B",
+  "stroke": 4,
+  "strokes": [
+   4,
+   3
+  ],
+  "depth": 2
+ },
+ {
+  "mem": "/tmp/btn/dress_b.bin",
+  "layer": "obj",
+  "rect": [
+   73,
+   138,
+   15,
+   15
+  ],
+  "button": "A",
+  "stroke": 4,
+  "strokes": [
+   4,
+   3
+  ],
+  "depth": 2
+ },
+ {
+  "mem": "/tmp/btn/dress_b.bin",
+  "layer": "obj",
+  "rect": [
+   117,
+   138,
+   15,
+   15
+  ],
+  "button": "B",
+  "stroke": 4,
+  "strokes": [
+   4,
+   3
+  ],
+  "depth": 2
+ },
+ {
+  "mem": "/tmp/btn/dictp.bin",
+  "layer": "obj",
+  "rect": [
+   209,
+   59,
+   13,
+   14
+  ],
+  "button": "A",
+  "stroke": 5,
+  "mirrored": true
+ },
+ {
+  "mem": "/tmp/btn/dict.bin",
+  "layer": "bg2",
+  "behind": "bg3",
+  "rect": [
+   200,
+   62,
+   36,
+   7
+  ],
+  "erase": [
+   6,
+   7
+  ],
+  "text": "L-SOFT"
+ },
+ {
+  "mem": "/tmp/btn/dict.bin",
+  "layer": "bg2",
+  "behind": "bg3",
+  "rect": [
+   200,
+   92,
+   36,
+   7
+  ],
+  "erase": [
+   6,
+   7
+  ],
+  "text": "* KEY"
+ },
+ {
+  "mem": "/tmp/btn/dictp.bin",
+  "layer": "bg1",
+  "behind": "bg3",
+  "rect": [
+   200,
+   97,
+   36,
+   7
+  ],
+  "erase": [
+   6,
+   7
+  ],
+  "text": "L-SOFT"
+ },
+ {
+  "mem": "/tmp/btn/dictp.bin",
+  "layer": "bg1",
+  "behind": "bg3",
+  "rect": [
+   200,
+   127,
+   36,
+   7
+  ],
+  "erase": [
+   6,
+   7
+  ],
+  "text": "* KEY"
+ },
+ {
+  "mem": "/tmp/btn/hamjam.bin",
+  "layer": "bg1",
+  "rect": [
+   136,
+   146,
+   15,
+   14
+  ],
+  "button": "A",
+  "outside": [
+   13,
+   0
+  ],
+  "stroke": 8,
+  "strokes": [
+   8,
+   7,
+   6
+  ]
+ },
+ {
+  "mem": "/tmp/btn/hamjam.bin",
+  "layer": "bg1",
+  "rect": [
+   184,
+   146,
+   15,
+   14
+  ],
+  "button": "B",
+  "outside": [
+   13,
+   0
+  ],
+  "stroke": 8,
+  "strokes": [
+   8,
+   7,
+   6
+  ]
+ },
+ {
+  "mem": "/tmp/btn/items.bin",
+  "layer": "bg1",
+  "rect": [
+   91,
+   142,
+   14,
+   13
+  ],
+  "button": "A",
+  "outside": [
+   12
+  ],
+  "stroke": 5,
+  "strokes": [
+   5,
+   4
+  ],
+  "depth": 2,
+  "letter_box": [
+   93,
+   144,
+   102,
+   150
+  ]
+ },
+ {
+  "mem": "/tmp/btn/items.bin",
+  "layer": "bg1",
+  "rect": [
+   154,
+   142,
+   14,
+   13
+  ],
+  "button": "B",
+  "outside": [
+   12
+  ],
+  "stroke": 5,
+  "strokes": [
+   5,
+   4
+  ],
+  "depth": 2,
+  "letter_box": [
+   156,
+   144,
+   165,
+   150
+  ]
+ },
+ {
+  "mem": "/tmp/btn/gems.bin",
+  "layer": "bg0",
+  "rect": [
+   4,
+   127,
+   14,
+   14
+  ],
+  "button": "A",
+  "outside": [
+   0,
+   10,
+   11,
+   12,
+   13,
+   14
+  ],
+  "stroke": 8,
+  "strokes": [
+   8,
+   7
+  ],
+  "depth": 2,
+  "letter_box": [
+   7,
+   130,
+   15,
+   137
+  ]
+ },
+ {
+  "mem": "/tmp/btn/gems.bin",
+  "layer": "bg0",
+  "rect": [
+   4,
+   143,
+   14,
+   14
+  ],
+  "button": "B",
+  "outside": [
+   0,
+   10,
+   11,
+   12,
+   13,
+   14
+  ],
+  "stroke": 8,
+  "strokes": [
+   8,
+   7
+  ],
+  "depth": 2,
+  "letter_box": [
+   7,
+   146,
+   15,
+   153
+  ]
+ },
+ {
+  "mem": "/tmp/btn/acc.bin",
+  "layer": "bg1",
+  "rect": [
+   108,
+   142,
+   14,
+   13
+  ],
+  "button": "B",
+  "outside": [
+   12
+  ],
+  "stroke": 5,
+  "strokes": [
+   5,
+   4
+  ],
+  "depth": 2,
+  "letter_box": [
+   110,
+   144,
+   119,
+   150
+  ]
+ },
+ {
+  "mem": "/tmp/btn/shop.bin",
+  "layer": "bg2",
+  "rect": [
+   101,
+   145,
+   14,
+   14
+  ],
+  "button": "A",
+  "outside": [
+   15
+  ],
+  "stroke": 4,
+  "strokes": [
+   4,
+   3
+  ],
+  "depth": 0,
+  "letter_box": [
+   105,
+   148,
+   110,
+   154
+  ]
+ },
+ {
+  "mem": "/tmp/btn/shop.bin",
+  "layer": "bg2",
+  "rect": [
+   157,
+   145,
+   14,
+   14
+  ],
+  "button": "B",
+  "outside": [
+   15
+  ],
+  "stroke": 4,
+  "strokes": [
+   4,
+   3
+  ],
+  "depth": 0,
+  "letter_box": [
+   161,
+   148,
+   166,
+   154
+  ]
+ }
+]

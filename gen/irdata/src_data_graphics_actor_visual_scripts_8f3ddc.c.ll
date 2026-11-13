@@ -1,0 +1,25 @@
+; ModuleID = 'gen/irdata/.tmp.c'
+source_filename = "gen/irdata/.tmp.c"
+target datalayout = "e-m:e-p:32:32-Fi8-f64:32:64-v64:32:64-v128:32:128-a:0:32-n32-S32"
+target triple = "armv4t-none-unknown-eabi"
+
+%struct.ActorVisualScripts8F3DDC = type { [23 x i8], [23 x i8], [8 x i8], [8 x i8], [4 x i8], %struct.AnimationCallbackCommand, [5 x i8], [4 x i8], %struct.AnimationCallbackCommand, [8 x i8], [24 x i8], [24 x i8], [24 x i8], [24 x i8], %struct.AnimationCallbackCommand, [8 x i8], [20 x i8], [20 x i8], [20 x i8], [20 x i8], [20 x i8], [10 x i8], %struct.AnimationCallbackCommand, [8 x i8], [18 x i8], [18 x i8], [18 x i8], [18 x i8], [15 x i8], [75 x i8], [75 x i8], %struct.AnimationCallbackCommand, [8 x i8], [8 x i8], %struct.AnimationCallbackCommand, [8 x i8], [8 x i8], [8 x i8], [8 x i8], [8 x i8], [8 x i8], [8 x i8], [8 x i8], %struct.AnimationCallbackCommand, [8 x i8], [8 x i8], [9 x i8] }
+%struct.AnimationCallbackCommand = type <{ i8, ptr }>
+
+@gActorVisualScripts8F3DDC = dso_local local_unnamed_addr constant %struct.ActorVisualScripts8F3DDC { [23 x i8] c"\88\00 \C8\01\02 \03D\08\84\03\00\80\01\01\80\01 \03D\08\80", [23 x i8] c"\88\00\00\C8\01\024\03D\08\84\03\00p\01\01p\01 \03D\08\80", [8 x i8] c"\7F\0Cj\89\08\83\00\00", [8 x i8] c"\7F\1Aj\89\08\83\00\00", [4 x i8] c"\BE\F8\BF\F0", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackUpdateMapBank6Chains }>, [5 x i8] c"\811>\8F\08", [4 x i8] c"\BE\F8\BF\F0", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackUpdateMapBank6Chains }>, [8 x i8] c"\7F.j\89\08\83\09\00", [24 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\BE\F8\BF\F0\7F6j\89\08\83\10\00", [24 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\BE\F8\BF\F0\7F>j\89\08\83\10\00", [24 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\BE\F8\BF\F0\7FFj\89\08\83\10\00", [24 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\BE\F0\BF\F0\7FNj\89\08\83\10\00", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackUpdateMapBank6Chains }>, [8 x i8] c"\7FVj\89\08\83\05\00", [20 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\7F^j\89\08\83\0C\00", [20 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\7Ffj\89\08\83\0C\00", [20 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\7Fnj\89\08\83\0C\00", [20 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\7Fvj\89\08\83\0C\00", [20 x i8] c"\A6\18\00\00\A7\18\00\00\A8\18\00\00\7F~j\89\08\83\0C\00", [10 x i8] c"\BE\04\BF\F0\C1\04\00\B5\00\FF", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackUpdateMapBank6Chains }>, [8 x i8] c"\7FVj\89\08\83\0F\00", [18 x i8] c"\BE\04\BF\F0\C1\04\00\B5\00\FF\7F^j\89\08\83\0A\00", [18 x i8] c"\BE\04\BF\F0\C1\04\00\B5\00\FF\7Ffj\89\08\83\0A\00", [18 x i8] c"\BE\04\BF\F0\C1\04\00\B5\00\FF\7Fnj\89\08\83\0A\00", [18 x i8] c"\BE\0C\BF\F0\C1\04\00\B5\00\FF\7Fvj\89\08\83\0A\00", [15 x i8] c"\BE\04\BF\F8\B5\00\FF\7F~j\89\08\83\07\00", [75 x i8] c"\0A\0Cj\89\08\0A\A8j\89\08\0A\86j\89\08\0AXk\89\08\0A\86j\89\08\0A\A8j\89\08\0A\0Cj\89\08\0A6k\89\08\0A\14k\89\08\0A\F2j\89\08\0A\CAj\89\08\0A\F2j\89\08\0A\14k\89\08\0A6k\89\08\81\0A>\8F\08", [75 x i8] c"\0A\1Aj\89\08\0A\B6j\89\08\0A\94j\89\08\0Afk\89\08\0A\94j\89\08\0A\B6j\89\08\0A\1Aj\89\08\0ADk\89\08\0A\22k\89\08\0A\00k\89\08\0A\D8j\89\08\0A\00k\89\08\0A\22k\89\08\0ADk\89\08\81\12>\8F\08", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackUpdateMapBank6SineFlight }>, [8 x i8] c"\01\148\89\08\83\00\00", [8 x i8] c"\01\DC\DAX\08\83\00\00", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackUpdateMapBank6SineFlight }>, [8 x i8] c"\01\1C8\89\08\83\00\00", [8 x i8] c"\01\DC\DAX\08\83\00\00", [8 x i8] c"\7F\80k\89\08\83\00\00", [8 x i8] c"\7F\A6k\89\08\83\00\00", [8 x i8] c"\7F\F8k\89\08\83\00\00", [8 x i8] c"\7F\D8k\89\08\83\00\00", [8 x i8] c"\7F\E0k\89\08\83\00\00", [8 x i8] c"\7F\E8k\89\08\83\00\00", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackWrapMapBank6ChainY }>, [8 x i8] c"\01\DC\DAX\08\83\00\00", [8 x i8] c"\7F\F0k\89\08\83\00\00", [9 x i8] c"\D0M\00x\DC\DAX\08\80" }, align 1
+
+declare dso_local arm_apcscc i32 @AnimationCallbackUpdateMapBank6Chains(ptr noundef, ptr noundef, ptr noundef) #0
+
+declare dso_local arm_apcscc i32 @AnimationCallbackUpdateMapBank6SineFlight(ptr noundef, ptr noundef, ptr noundef) #0
+
+declare dso_local arm_apcscc i32 @AnimationCallbackWrapMapBank6ChainY(ptr noundef, ptr noundef, ptr noundef) #0
+
+attributes #0 = { "frame-pointer"="all" "no-builtins" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="arm7tdmi" "target-features"="+armv4t,+soft-float,+strict-align,-aes,-bf16,-d32,-dotprod,-fp-armv8,-fp-armv8d16,-fp-armv8d16sp,-fp-armv8sp,-fp16,-fp16fml,-fp64,-fpregs,-fullfp16,-mve,-mve.fp,-neon,-sha2,-thumb-mode,-vfp2,-vfp2sp,-vfp3,-vfp3d16,-vfp3d16sp,-vfp3sp,-vfp4,-vfp4d16,-vfp4d16sp,-vfp4sp" "use-soft-float"="true" }
+
+!llvm.module.flags = !{!0, !1, !2}
+!llvm.ident = !{!3}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 1, !"min_enum_size", i32 4}
+!2 = !{i32 7, !"frame-pointer", i32 2}
+!3 = !{!"Ubuntu clang version 18.1.3 (1ubuntu1)"}

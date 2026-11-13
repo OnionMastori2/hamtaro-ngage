@@ -1,0 +1,33 @@
+{
+ "runtime_functions": [
+  "BiosArcTan2",
+  "BiosCpuFastSet",
+  "BiosCpuSet",
+  "BiosDiv",
+  "BiosDivRem",
+  "BiosLZ77VRAM",
+  "BiosLZ77WRAM",
+  "BiosObjAffineSet",
+  "BiosSoftReset",
+  "BiosSqrt",
+  "BiosVBlankIntrWait",
+  "CopyInitialAudioDispatchAsm",
+  "EndAudioTrackTieAsm",
+  "MultiplyAudioUnsignedHigh",
+  "ProcessAudioPlayerAsm",
+  "RunAudioMixerAsm",
+  "SetAudioTrackLfoSpeedAsm",
+  "SetAudioTrackModulationDepthAsm",
+  "StartAudioTrackNoteAsm",
+  "StopAudioTrack",
+  "SyncAudioDmaAtVblankAsm",
+  "__divsi3",
+  "__modsi3",
+  "__udivsi3",
+  "__umodsi3",
+  "irq_dispatch"
+ ],
+ "missing_globals": [],
+ "errors": [],
+ "synthetic_functions": 281
+}

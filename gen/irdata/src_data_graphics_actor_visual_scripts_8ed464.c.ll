@@ -1,0 +1,23 @@
+; ModuleID = 'gen/irdata/.tmp.c'
+source_filename = "gen/irdata/.tmp.c"
+target datalayout = "e-m:e-p:32:32-Fi8-f64:32:64-v64:32:64-v128:32:128-a:0:32-n32-S32"
+target triple = "armv4t-none-unknown-eabi"
+
+%struct.ActorVisualScripts8ED464 = type { [23 x i8], [23 x i8], [78 x i8], [75 x i8], [10 x i8], [102 x i8], [33 x i8], [78 x i8], [78 x i8], [78 x i8], [95 x i8], %struct.AnimationCallbackCommand, [9 x i8], %struct.AnimationCallbackCommand, [9 x i8], %struct.AnimationCallbackCommand, [9 x i8], %struct.AnimationCallbackCommand, [14 x i8], [1 x i8], [12 x i8], %struct.AnimationCallbackCommand, [1 x i8], [8 x i8], [8 x i8], [55 x i8], [7 x i8] }
+%struct.AnimationCallbackCommand = type <{ i8, ptr }>
+
+@gActorVisualScripts8ED464 = dso_local local_unnamed_addr constant %struct.ActorVisualScripts8ED464 { [23 x i8] c"\88\00 \C8\01\028\A6;\08\84\03\00\80\00\01\80\008\A6;\08\80", [23 x i8] c"\88\00\E0\C7\01\02\88W\22\08\84\03\00`\01\01`\01\88W\22\08\80", [78 x i8] c"\AE\00\80\FF\FF\87\02\CB\88\0D \08\CC\CD\04\00\D0\05\00\CB\CC\0E \08\CC\CD\06\00\CB\88\0D \08\CC\CD\04\00\CB\88\0D \08\CC\CD\04\01\D0\05\00\CB\CC\0E \08\CC\CD\06\01\CB\88\0D \08\CC\CD\04\01\88\AE\00\00\00\00\81\D4\1F\8D\08", [75 x i8] c"\AE\00\80\FF\FF\CB\88\0D \08\CC\CD\04\00\D0\05\00\CB\CC\0E \08\CC\CD\06\00\CB\88\0D \08\CC\CD\04\00\CB\88\0D \08\CC\CD\04\01\D0\05\00\CB\CC\0E \08\CC\CD\06\01\CB\88\0D \08\CC\CD\04\01\AE\00\00\00\00\81\D4\1F\8D\08", [10 x i8] c"\AE\00\00\FF\FF\81\D22\8D\08", [102 x i8] c"\AE\00\00\02\00\87\08\D0\05\00\CB\BC\15\18\08\CC\CD\03\00\CB\FC\17\18\08\CC\CD\03\00\88\AE\00\00\00\00\AC\00\00\02\00\D0\05\00\CBP!\18\08\CC\CD\02\00\CB\EC\22\18\08\CC\CD\04\00\CBP!\18\08\CC\CD\02\00\D0\05\00\CB\A0$\18\08\CC\CD\02\00\CB@&\18\08\CC\CD\04\00\CB\A0$\18\08\CC\CD\02\00\83'\00", [33 x i8] c"\10\DC\DAX\08\89{;\8E\08\02\D4S\88\08\02\E8S\88\08\02\FCS\88\08\02\DC\DAX\08\83\0A\00", [78 x i8] c"\AC\00@\FF\FF\87\02\CB,a\22\08\CC\CD\04\00\D0\05\00\CB\E4b\22\08\CC\CD\06\00\CB,a\22\08\CC\CD\04\00\CB\8Cd\22\08\CC\CD\04\00\D0\05\00\CB<f\22\08\CC\CD\06\00\CB\8Cd\22\08\CC\CD\04\00\88\AC\00\00\00\00\81\83\B5\8D\08", [78 x i8] c"\AC\00\C0\00\00\87\02\CB,a\22\08\CC\CD\04\01\D0\05\00\CB\E4b\22\08\CC\CD\06\01\CB,a\22\08\CC\CD\04\01\CB\8Cd\22\08\CC\CD\04\01\D0\05\00\CB<f\22\08\CC\CD\06\01\CB\8Cd\22\08\CC\CD\04\01\88\AC\00\00\00\00\81\83\B5\8D\08", [78 x i8] c"\AC\00\C0\00\00\87\02\CB,a\22\08\CC\CD\04\01\D0\05\00\CB\E4b\22\08\CC\CD\06\01\CB,a\22\08\CC\CD\04\01\CB\8Cd\22\08\CC\CD\04\01\D0\05\00\CB<f\22\08\CC\CD\06\01\CB\8Cd\22\08\CC\CD\04\01\88\AC\00\00\00\00\81\B5\C1\8D\08", [95 x i8] c"\AC\00\00\FE\FF\87\04\CB\B0X\22\08\CC\CD\04\00\CB|Z\22\08\CC\CD\04\00\CB$\\\22\08\CC\CD\04\00\CB|Z\22\08\CC\CD\04\01\88\AF\00 \00\00\CB\B0X\22\08\CC\CD\04\00\CB|Z\22\08\CC\CD\04\00\CB$\\\22\08\CC\CD\04\00\CB|Z\22\08\CC\CD\04\01\AC\00\00\00\00\AF\00\00\00\00", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackMoveMapBank4WithinXBounds }>, [9 x i8] c"\CB\DC\A8\22\08\CC\CD\0C\00", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackMoveMapBank4WithinXBounds }>, [9 x i8] c"\CBly\22\08\CC\CD\0C\00", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackMoveMapBank4WithinXBounds }>, [9 x i8] c"\CB\DC\A8\22\08\CC\CD\0C\01", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackMoveMapBank4WithinXBounds }>, [14 x i8] c"\CBly\22\08\CC\CD\0A\00\81\05\D7\8E\08", [1 x i8] c"\80", [12 x i8] c"\10\B1\01,B$\08\82{\13\8E\08", %struct.AnimationCallbackCommand <{ i8 -115, ptr @AnimationCallbackStopMapBank4Class2X }>, [1 x i8] c"\80", [8 x i8] c"\7F\FC\10\89\08\83\00\00", [8 x i8] c"\7F4\11\89\08\83\00\00", [55 x i8] c"\04\FC\10\89\08\10N\11\89\08\AC\00\00\01\00\87\05\04h\11\89\08\D0\05\00\06\82\11\89\08\04h\11\89\08\04\9C\11\89\08\D0\05\00\06\B6\11\89\08\04\9C\11\89\08\88\80", [7 x i8] c"\8B\B0\FF\8A\00\00\80" }, align 1
+
+declare dso_local arm_apcscc i32 @AnimationCallbackMoveMapBank4WithinXBounds(ptr noundef, ptr noundef, ptr noundef) #0
+
+declare dso_local arm_apcscc i32 @AnimationCallbackStopMapBank4Class2X(ptr noundef, ptr noundef, ptr noundef) #0
+
+attributes #0 = { "frame-pointer"="all" "no-builtins" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="arm7tdmi" "target-features"="+armv4t,+soft-float,+strict-align,-aes,-bf16,-d32,-dotprod,-fp-armv8,-fp-armv8d16,-fp-armv8d16sp,-fp-armv8sp,-fp16,-fp16fml,-fp64,-fpregs,-fullfp16,-mve,-mve.fp,-neon,-sha2,-thumb-mode,-vfp2,-vfp2sp,-vfp3,-vfp3d16,-vfp3d16sp,-vfp3sp,-vfp4,-vfp4d16,-vfp4d16sp,-vfp4sp" "use-soft-float"="true" }
+
+!llvm.module.flags = !{!0, !1, !2}
+!llvm.ident = !{!3}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 1, !"min_enum_size", i32 4}
+!2 = !{i32 7, !"frame-pointer", i32 2}
+!3 = !{!"Ubuntu clang version 18.1.3 (1ubuntu1)"}

@@ -1,0 +1,8 @@
+build/
+*.gba
+*.sav
+*.srm
+*.wav
+__pycache__/
+*.pyc
+gen/irdata/.tmp.c
