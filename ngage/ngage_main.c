@@ -14,7 +14,8 @@
  *       zoom=1        start in the zoom view (0 = letterbox)
  *       volume=3      sound volume: 0 off, 1 low, 2 medium, 3 high
  *       filter=1      smooth scaling (0 = sharp)
- *       frameskip=1   draw 1 of N+1 frames (game logic always runs at 60)
+ *       frameskip=0   at least N game frames between pictures (the game
+ *                     also skips pictures on its own when it falls behind)
  *       cache=18      cartridge pages kept in RAM (32 KiB each)
  *       prompts=1     show N-Gage keys instead of GBA buttons
  *       link=host | link=join     Bluetooth link cable (see README)
@@ -51,6 +52,7 @@ static SDL_Window *s_window;
 static SDL_Renderer *s_renderer;
 static SDL_Texture *s_texture;
 static u16 s_panel[RT_PANEL_H * RT_PANEL_W];
+static int s_fmt4444;          /* the panel texture is XRGB4444 (else RGB565) */
 static u32 s_keys;
 static u32 s_splash_start;
 static int s_state;            /* 0 splash, 1 game, 2 error */
@@ -113,8 +115,9 @@ static void feed_audio(void)
         return;
     }
     step = (rt_audio_rate() << 16) / OUT_RATE;
-    /* keep the queue short (about 1/4 s) so the sound stays in step */
-    if (SDL_GetAudioStreamQueued(s_audio) > (int)(OUT_RATE / 4u * 2u)) {
+    /* the game makes its sound in bursts (several frames between pictures):
+     * let up to half a second queue before dropping any */
+    if (SDL_GetAudioStreamQueued(s_audio) > (int)(OUT_RATE / 2u * 2u)) {
         rt_audio_clear();
         return;
     }
@@ -166,6 +169,57 @@ static char s_error[200];
 static char s_dir[64];
 static char s_rom[96], s_sav[96], s_ini[96];
 static u32 s_next_frame_ms;
+static u32 s_frame_parity;
+#define MAX_BATCH 15          /* game frames run per pass before drawing: on
+                                 the phone a game frame takes ~2 ms and a
+                                 picture 40-200 ms, so the game keeps its
+                                 speed by drawing fewer pictures */
+static int s_min_skip = 0;    /* frameskip from hamtaro.ini */
+static int s_since_draw = 99;
+static int s_dirty;
+
+/* Speed figures in hamtaro.log: every 5 seconds for the first two minutes,
+ * game frames and pictures per second, and the time a game frame takes
+ * without and with drawing. */
+static u32 s_pf_start, s_pf_game, s_pf_drawn, s_pf_ms_logic, s_pf_ms_draw, s_pf_ms_present, s_pf_n_present, s_pf_reports;
+
+static void log_line(const char *msg);
+
+static void perf_report(u32 now)
+{
+    char m[160];
+    u32 span = now - s_pf_start, logic = s_pf_game - s_pf_drawn;
+    sprintf(m, "[perf] %u ms: %u game frames, %u drawn; frame %u ms, frame+draw %u ms, present %u ms",
+            (unsigned)span, (unsigned)s_pf_game, (unsigned)s_pf_drawn,
+            (unsigned)(logic ? s_pf_ms_logic / logic : 0),
+            (unsigned)(s_pf_drawn ? s_pf_ms_draw / s_pf_drawn : 0),
+            (unsigned)(s_pf_n_present ? s_pf_ms_present / s_pf_n_present : 0));
+    log_line(m);
+    s_pf_start = now;
+    s_pf_game = s_pf_drawn = s_pf_ms_logic = s_pf_ms_draw = s_pf_ms_present = s_pf_n_present = 0;
+    s_pf_reports++;
+}
+
+static void perf_frame(int drawn, u32 ms)
+{
+    u32 now = (u32)SDL_GetTicks();
+    if (s_pf_reports >= 24u) return;
+    if (!s_pf_start) s_pf_start = now;
+    s_pf_game++;
+    if (drawn) {
+        s_pf_drawn++;
+        s_pf_ms_draw += ms;
+    } else {
+        s_pf_ms_logic += ms;
+    }
+    if (now - s_pf_start >= 5000u) perf_report(now);
+}
+
+static void perf_present(u32 ms)
+{
+    s_pf_ms_present += ms;
+    s_pf_n_present++;
+}
 static char s_link_mode[8];
 static int s_link_channel = 9;
 
@@ -309,7 +363,8 @@ static void draw_splash(u32 now)
         int r = (int)((c >> 11) & 31u), g = (int)((c >> 5) & 63u), b = (int)(c & 31u);
         r = (r * lv) >> 8; g = (g * lv) >> 8; b = (b * lv) >> 8;
         r += ((31 - r) * wh) >> 8; g += ((63 - g) * wh) >> 8; b += ((31 - b) * wh) >> 8;
-        s_panel[i] = (u16)((r << 11) | (g << 5) | b);
+        s_panel[i] = s_fmt4444 ? (u16)(((r >> 1) << 8) | ((g >> 2) << 4) | (b >> 1))
+                               : (u16)((r << 11) | (g << 5) | b);
     }
 #endif
 }
@@ -327,7 +382,7 @@ static void toast(const char *msg)
 static void present(void)
 {
     SDL_UpdateTexture(s_texture, NULL, s_panel, RT_PANEL_W * (int)sizeof(u16));
-    SDL_RenderClear(s_renderer);
+    /* the texture covers the whole screen: no clear needed */
     SDL_RenderTexture(s_renderer, s_texture, NULL, NULL);
     if (s_state == 2) {
         SDL_SetRenderDrawColor(s_renderer, 255, 255, 255, 255);
@@ -365,11 +420,21 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     log_line("[2] SDL_Init ok");
     if (!SDL_CreateWindowAndRenderer("Hamtaro", RT_PANEL_W, RT_PANEL_H, 0, &s_window, &s_renderer))
         return SDL_APP_FAILURE;
-    s_texture = SDL_CreateTexture(s_renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
+    /* The panel is 12-bit (XRGB4444, Symbian's EColor4K).  A texture in that
+     * format goes to the screen as it is; any other format is converted
+     * pixel by pixel on every picture, which cost about 90 ms a frame. */
+    s_texture = SDL_CreateTexture(s_renderer, SDL_PIXELFORMAT_XRGB4444, SDL_TEXTUREACCESS_STREAMING,
                                   RT_PANEL_W, RT_PANEL_H);
+    if (s_texture) {
+        s_fmt4444 = 1;
+        rt_scale_set_format(RT_FMT_XRGB4444);
+    } else {
+        s_texture = SDL_CreateTexture(s_renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
+                                      RT_PANEL_W, RT_PANEL_H);
+        rt_scale_set_format(RT_FMT_RGB565);
+    }
     if (!s_texture) return SDL_APP_FAILURE;
-    log_line("[3] window, renderer, texture ok");
-    rt_scale_set_format(RT_FMT_RGB565);
+    log_line(s_fmt4444 ? "[3] window, renderer, texture ok (XRGB4444)" : "[3] window, renderer, texture ok (RGB565)");
     {
         /* The device plays 8000 Hz mono 16-bit; the stream is given exactly
          * that (see feed_audio).  The toolchain recommends always opening
@@ -384,7 +449,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     memset(&cfg, 0, sizeof cfg);
     cfg.zoom = 1;
-    cfg.frameskip = 1;
+    cfg.frameskip = 0;
     cfg.rom_cache_pages = 18;   /* 16 for the game, 2 for the music engine and songs */
     if (find_files() != 0) {
         SDL_strlcpy(s_error, "Put your hamtaro.gba in E:\\hamtaro\\", sizeof s_error);
@@ -397,6 +462,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     cfg.rom_path = s_rom;
     cfg.save_path = s_sav;
     log_line("[6] runtime init...");
+    s_min_skip = cfg.frameskip < 0 ? 0 : cfg.frameskip;
     if (rt_init(&cfg) != 0) {
         SDL_strlcpy(s_error, "Not enough memory for the game", sizeof s_error);
         s_state = 2;
@@ -460,29 +526,51 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         }
     }
     if (s_state == 1) {
-        /* run as many GBA frames as real time asks for (at most 2), draw once */
-        int n = 0;
-        while (n < 2 && (s32)(now - s_next_frame_ms) >= 0) {
+        /* Run as many GBA frames as real time asks for (at most MAX_BATCH),
+         * and draw only the last of them: drawing costs far more than the
+         * game itself on the phone, so the picture rate drops before the
+         * game slows down.  frameskip=N keeps at least N frames between
+         * pictures. */
+        int due = 0, n = 0;
+        u32 t0, t1;
+        while (due < MAX_BATCH && (s32)(now - (s_next_frame_ms + (u32)due * 17u)) >= 0) due++;
+        while (n < due) {
             static int s_logged_frames;
+            int draw = n == due - 1 && s_since_draw >= s_min_skip;
             if (s_logged_frames < 3) {
                 char m[48];
                 sprintf(m, "[9] running game frame %d", s_logged_frames);
                 log_line(m);
             }
+            g_rt_render_next = draw;
+            t0 = (u32)SDL_GetTicks();
             if (!rt_coro_frame()) break;
+            t1 = (u32)SDL_GetTicks();
             if (s_logged_frames < 3) {
                 log_line("    frame returned");
                 s_logged_frames++;
             }
-            s_next_frame_ms += (n & 1) ? 17u : 16u;   /* ~59.7 Hz */
+            perf_frame(rt_frame_rendered(), t1 - t0);
+            if (rt_frame_rendered()) {
+                s_since_draw = 0;
+                s_dirty = 1;
+            } else {
+                s_since_draw++;
+            }
+            s_next_frame_ms += (s_frame_parity++ & 1) ? 17u : 16u;   /* ~59.7 Hz */
             n++;
             if (s_state != 1) break;
         }
-        if ((s32)(now - s_next_frame_ms) > 100) s_next_frame_ms = now;   /* fell behind: drop time */
+        if ((s32)(now - s_next_frame_ms) > 400) s_next_frame_ms = now;   /* far behind (loading): drop time */
         feed_audio();
         if (n == 0) SDL_Delay(1);
     }
-    present();
+    if (s_state != 1 || s_dirty || s_toast[0]) {
+        u32 t0 = (u32)SDL_GetTicks();
+        present();
+        perf_present((u32)SDL_GetTicks() - t0);
+        s_dirty = 0;
+    }
     return s_quit ? SDL_APP_SUCCESS : SDL_APP_CONTINUE;
 }
 

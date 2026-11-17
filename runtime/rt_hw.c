@@ -48,6 +48,10 @@ static Timer s_tm[4];
 u32 rt_frame_count(void) { return s_frames; }
 int rt_frame_rendered(void) { return s_rendered; }
 
+/* -1: draw 1 of (frameskip+1) frames; 0 or 1: the front end decides for
+ * the next frame (the N-Gage skips frames as the time allows) */
+int g_rt_render_next = -1;
+
 void rt_hw_reset(void)
 {
     memset(g_rt_io, 0, sizeof g_rt_io);
@@ -350,7 +354,8 @@ static void hblank(u32 line)
 void rt_frame(void)
 {
     u32 line;
-    int render = (g_rt_cfg.frameskip <= 0) || (s_frames % (u32)(g_rt_cfg.frameskip + 1) == 0);
+    int render = g_rt_render_next >= 0 ? g_rt_render_next
+               : (g_rt_cfg.frameskip <= 0) || (s_frames % (u32)(g_rt_cfg.frameskip + 1) == 0);
 
     s_rendered = render;
     s_in_frame = 1;

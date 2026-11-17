@@ -415,10 +415,14 @@ static void scenery_centre(int on, int line)
 
 static void pass_world(void)
 {
+    int x0 = -g_rt_view.shift_x, x1 = RT_VIEW_W - g_rt_view.shift_x;
     g_rt_ppu_bgmask = g_rt_view.world_mask;
     g_rt_ppu_objs = 1;
     g_rt_ppu_ui = 0;
     g_rt_ppu_screen_h = RT_VIEW_H;
+    /* the zoom view shows RT_VIEW_W of the 240 columns: draw only those */
+    g_rt_ppu_x0 = x0 < 0 ? 0 : x0 > RT_GBA_W ? RT_GBA_W : x0;
+    g_rt_ppu_x1 = x1 < 0 ? 0 : x1 > RT_GBA_W ? RT_GBA_W : x1;
 }
 
 static void pass_all(void)
@@ -427,6 +431,8 @@ static void pass_all(void)
     g_rt_ppu_objs = 1;
     g_rt_ppu_ui = 0;
     g_rt_ppu_screen_h = RT_GBA_H;
+    g_rt_ppu_x0 = 0;
+    g_rt_ppu_x1 = RT_GBA_W;
 }
 
 void rt_view_line(int line)

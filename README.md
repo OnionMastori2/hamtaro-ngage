@@ -76,7 +76,7 @@ input couldn't get past naming without a save file.
 | `zoom` | 1 | 1 = zoom (fills the 176×208 screen), 0 = letterbox; the right soft key switches |
 | `volume` | 3 | 0 off, 1 low, 2 medium, 3 high; key 0 steps through them |
 | `filter` | 1 | 1 = smooth scaling (keeps thin outlines), 0 = sharp |
-| `frameskip` | 1 | draw 1 of N+1 frames; the game always runs at 60 Hz |
+| `frameskip` | 0 | at least N game frames between pictures; the game also skips pictures by itself when the phone falls behind |
 | `cache` | 18 | cartridge pages (32 KiB each) kept in RAM; raise if memory allows |
 | `prompts` | 1 | show N-Gage keys in the game's button prompts |
 | `link` | — | `host` or `join`: Bluetooth link cable |
@@ -167,6 +167,15 @@ python3 tools/find_prompts.py <decomp> rom.gba runtime/rt_prompts_data.c
 
 (`gen/code_units.txt` / `data_units.txt` list the C partitions from
 `config/segments.json`, in order.)
+
+## Release
+
+`release/` holds the download for the GitHub releases page: the installer
+(`install.cmd`, `install.ps1`) that checks the user's ROM and lays out the
+memory card, its `README.txt` and the default `hamtaro.ini`. After an
+N-Gage build, make the zip with
+
+    powershell -ExecutionPolicy Bypass -File release\make-release.ps1 -Version 0.2.0 -Build build\ngage
 
 ## Legal
 

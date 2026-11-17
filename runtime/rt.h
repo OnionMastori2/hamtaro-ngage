@@ -105,6 +105,7 @@ void rt_run(void);                     /* enters game_main(); does not return */
 const char *rt_error(void);
 u32  rt_frame_count(void);
 int  rt_frame_rendered(void);          /* last frame produced a picture */
+extern int g_rt_render_next;          /* -1: frameskip; 0/1: draw the next frame or not */
 
 /* hardware model (rt_hw.c) */
 void rt_hw_reset(void);
@@ -130,6 +131,7 @@ void rt_ppu_frame_start(void);
 void rt_ppu_line(int line, u16 *out);  /* line 0 .. RT_VIEW_H-1 */
 extern u32 g_rt_ppu_bgmask;
 extern int g_rt_ppu_objs, g_rt_ppu_ui, g_rt_ppu_screen_h;
+extern int g_rt_ppu_x0, g_rt_ppu_x1;   /* columns a pass draws */
 extern const u8 *g_rt_ppu_objfilter;
 void rt_ppu_affine_reload(int bg);
 

@@ -849,6 +849,7 @@ static void psg_sample(int *pl, int *pr)
         if (c->on) {
             u32 n = c->phase >> 16;
             c->phase &= 0xFFFFu;
+            if (n > 8u) n = 8u + (n & 7u);   /* fast noise: the exact steps are not audible */
             while (n--) {
                 u32 bit = (c->lfsr ^ (c->lfsr >> 1)) & 1u;
                 c->lfsr = (c->lfsr >> 1) | (bit << 14);

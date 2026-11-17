@@ -40,6 +40,8 @@ u32 g_rt_ppu_bgmask = 15u;     /* BG layers this pass draws */
 int g_rt_ppu_objs = 1;         /* this pass draws sprites */
 int g_rt_ppu_ui = 0;           /* UI pass: transparent backdrop, no affine step */
 int g_rt_ppu_screen_h = 160;   /* lines the game's screen has */
+int g_rt_ppu_x0 = 0, g_rt_ppu_x1 = 240;   /* columns this pass needs (the zoom
+                                             view shows 176 of the 240) */
 const u8 *g_rt_ppu_objfilter;  /* if set: only OBJs with a nonzero entry */
 
 static s32 ref_reg(int bg, int axis)
@@ -77,6 +79,8 @@ static int pmod(int a, int m)
 /* --- backgrounds ----------------------------------------------------------- */
 
 static int s_backmost_bg = -1;   /* lowest-priority enabled BG this line */
+static u8 *s_paint_lay;          /* painting: which layer each pixel shows (or 0) */
+static u8 s_paint_id;
 
 static void text_bg_mode(int bg, int y, u16 *dst, int paint);
 static void text_bg(int bg, int y, u16 *dst) { text_bg_mode(bg, y, dst, 0); }
@@ -103,13 +107,14 @@ static void text_bg_mode(int bg, int y, u16 *dst, int paint)
     row_base = (ty >> 3) & 31u;
     if (mh == 1) {
         /* fast path: one map entry and one tile row per run of up to 8 pixels */
-        u32 tx = hofs & wmask;
-        x = 0;
-        while (x < 240) {
+        u32 tx = (hofs + (u32)g_rt_ppu_x0) & wmask;
+        const int xend = g_rt_ppu_x1;
+        x = g_rt_ppu_x0;
+        while (x < xend) {
             u32 col = tx >> 3, px0 = tx & 7u, n = 8u - px0, py, tile, i;
             u32 ea = (screenbase + ((tx >> 8) + row_block) * 0x800u + row_base * 64u + (col & 31u) * 2u) & 0xFFFEu;
             entry = *(const u16 *)(g_rt_vram + ea);
-            if (n > (u32)(240 - x)) n = (u32)(240 - x);
+            if (n > (u32)(xend - x)) n = (u32)(xend - x);
             py = ty & 7u;
             if (entry & 0x800u) py = 7u - py;
             tile = entry & 0x3FFu;
@@ -123,7 +128,7 @@ static void text_bg_mode(int bg, int y, u16 *dst, int paint)
                         u32 px = px0 + i, idx;
                         if (entry & 0x400u) px = 7u - px;
                         idx = row[px];
-                        if (paint) { if (idx) dst[x + (int)i] = PAL[idx]; }
+                        if (paint) { if (idx) { dst[x + (int)i] = PAL[idx]; if (s_paint_lay) s_paint_lay[x + (int)i] = s_paint_id; } }
                         else dst[x + (int)i] = idx ? (u16)(PAL[idx] | OPAQUE) : 0;
                     }
                 }
@@ -137,19 +142,30 @@ static void text_bg_mode(int bg, int y, u16 *dst, int paint)
                     const u16 *pal = PAL + ((entry >> 12) << 4);
                     if (!rowbits) {
                         if (!paint) for (i = 0; i < n; i++) dst[x + (int)i] = 0;
-                    } else if (paint) {
-                        for (i = 0; i < n; i++) {
-                            u32 px = px0 + i, idx;
-                            if (entry & 0x400u) px = 7u - px;
-                            idx = (rowbits >> (px * 4u)) & 15u;
-                            if (idx) dst[x + (int)i] = pal[idx];
-                        }
                     } else {
-                        for (i = 0; i < n; i++) {
-                            u32 px = px0 + i, idx;
-                            if (entry & 0x400u) px = 7u - px;
-                            idx = (rowbits >> (px * 4u)) & 15u;
-                            dst[x + (int)i] = idx ? (u16)(pal[idx] | OPAQUE) : 0;
+                        u16 *d = dst + x;
+                        if (entry & 0x400u) {
+                            /* mirrored: read the row from the other end */
+                            u32 r = ((rowbits >> 4) & 0x0F0F0F0Fu) | ((rowbits & 0x0F0F0F0Fu) << 4);
+                            rowbits = (r >> 24) | ((r >> 8) & 0xFF00u) | ((r << 8) & 0xFF0000u) | (r << 24);
+                        }
+                        rowbits >>= px0 * 4u;
+                        if (paint && s_paint_lay) {
+                            u8 *l = s_paint_lay + x;
+                            for (i = 0; i < n; i++, rowbits >>= 4) {
+                                u32 idx = rowbits & 15u;
+                                if (idx) { d[i] = pal[idx]; l[i] = s_paint_id; }
+                            }
+                        } else if (paint) {
+                            for (i = 0; i < n; i++, rowbits >>= 4) {
+                                u32 idx = rowbits & 15u;
+                                if (idx) d[i] = pal[idx];
+                            }
+                        } else {
+                            for (i = 0; i < n; i++, rowbits >>= 4) {
+                                u32 idx = rowbits & 15u;
+                                d[i] = idx ? (u16)(pal[idx] | OPAQUE) : 0;
+                            }
                         }
                     }
                 }
@@ -159,7 +175,7 @@ static void text_bg_mode(int bg, int y, u16 *dst, int paint)
         }
         return;
     }
-    for (x = 0; x < 240; x++) {
+    for (x = g_rt_ppu_x0; x < g_rt_ppu_x1; x++) {
         int sx = x - (x % mh);
         u32 tx = ((u32)sx + hofs) & wmask;
         u32 col = tx >> 3;
@@ -249,6 +265,7 @@ static u8 s_objlist[128];
 static s16 s_objtop[128], s_objh[128];   /* vertical extent (mod 256) */
 static int s_nobj;
 static int s_obj_on_line;
+static u32 s_linemask[256][4];            /* objects (s_objlist order) on each line */
 
 static void build_objlist(void)
 {
@@ -266,6 +283,11 @@ static void build_objlist(void)
             s_objh[s_nobj] = (s16)h;
         }
         s_objlist[s_nobj++] = (u8)i;
+    }
+    memset(s_linemask, 0, sizeof s_linemask);
+    for (i = 0; i < s_nobj; i++) {
+        int k, top = s_objtop[i], h = s_objh[i];
+        for (k = 0; k < h; k++) s_linemask[(top + k) & 0xFF][i >> 5] |= 1u << (i & 31);
     }
     g_rt_oam_dirty = 0;
 }
@@ -285,9 +307,17 @@ static void obj_line(int y)
         memset(s_obj_semi, 0, sizeof s_obj_semi);
         s_obj_on_line = 0;
     }
+    {
+    int on_screen = y >= 0 && y < g_rt_ppu_screen_h;
+    const u32 *lm = s_linemask[y & 0xFF];
     for (li = 0; li < s_nobj; li++) {
         u32 a0, a1, a2;
-        if (y >= 0 && y < g_rt_ppu_screen_h && ((y - s_objtop[li]) & 0xFF) >= s_objh[li]) continue;
+        if (on_screen) {
+            /* skip to the next object on this line */
+            u32 w = lm[li >> 5] >> (li & 31);
+            if (!w) { li |= 31; continue; }
+            while (!(w & 1u)) { w >>= 1; li++; }
+        }
         i = s_objlist[li];
         if (g_rt_ppu_objfilter && !g_rt_ppu_objfilter[i]) continue;
         a0 = OAM[i * 4]; a1 = OAM[i * 4 + 1]; a2 = OAM[i * 4 + 2];
@@ -338,11 +368,12 @@ static void obj_line(int y)
         }
         if (map1d) row_stride = (u32)(w >> 3) * (c256 ? 2u : 1u);
         else row_stride = 32u;
+        if (ox + bw <= g_rt_ppu_x0 || ox >= g_rt_ppu_x1) continue;
         for (sx = 0; sx < bw; sx++) {
             int x = ox + sx;
             int tx, ty;
             u32 tile, addr, idx, color;
-            if (x < 0 || x >= 240) continue;
+            if (x < g_rt_ppu_x0 || x >= g_rt_ppu_x1) continue;
             if (affine) {
                 int dx = sx - bw / 2, dy = ly - bh / 2;
                 tx = ((pa * dx + pb * dy) >> 8) + w / 2;
@@ -377,6 +408,7 @@ static void obj_line(int y)
             s_obj_prio[x] = (u8)prio;
             s_obj_semi[x] = (u8)(mode == 1);
         }
+    }
     }
 }
 
@@ -450,31 +482,32 @@ static u8 s_topl[240], s_underl[240];
 static void compose(u16 *out, const int *order, const int *prio, int n, u32 backdrop,
                     u32 bldcnt, u32 bmode, u32 eva, u32 evb, u32 evy, int windowed, int objs)
 {
+    const int X0 = g_rt_ppu_x0, X1 = g_rt_ppu_x1;
     int x, p, k;
     int semi = 0;
     if (objs) {
-        for (x = 0; x < 240; x++)
+        for (x = X0; x < X1; x++)
             if (s_obj_semi[x]) { semi = 1; break; }
     }
     if (!windowed && bmode == 0 && !semi) {
         /* fast path: plain overwrite */
-        for (x = 0; x < 240; x++) out[x] = (u16)backdrop;
+        for (x = X0; x < X1; x++) out[x] = (u16)backdrop;
         for (p = 3; p >= 0; p--) {
             for (k = n - 1; k >= 0; k--) {
                 const u16 *src;
                 if (prio[k] != p) continue;
                 src = s_bg[order[k]];
-                for (x = 0; x < 240; x++)
+                for (x = X0; x < X1; x++)
                     if (src[x] & OPAQUE) out[x] = (u16)(src[x] & 0x7FFFu);
             }
             if (objs) {
-                for (x = 0; x < 240; x++)
+                for (x = X0; x < X1; x++)
                     if ((s_obj[x] & OPAQUE) && s_obj_prio[x] == p) out[x] = (u16)(s_obj[x] & 0x7FFFu);
             }
         }
         return;
     }
-    for (x = 0; x < 240; x++) {
+    for (x = X0; x < X1; x++) {
         s_top[x] = s_under[x] = (u16)backdrop;
         s_topl[x] = s_underl[x] = 5;
     }
@@ -485,7 +518,7 @@ static void compose(u16 *out, const int *order, const int *prio, int n, u32 back
             u32 bit = 1u << b;
             if (prio[k] != p) continue;
             src = s_bg[b];
-            for (x = 0; x < 240; x++) {
+            for (x = X0; x < X1; x++) {
                 if (!(src[x] & OPAQUE)) continue;
                 if (windowed && !(s_win[x] & bit)) continue;
                 s_under[x] = s_top[x];
@@ -495,7 +528,7 @@ static void compose(u16 *out, const int *order, const int *prio, int n, u32 back
             }
         }
         if (objs) {
-            for (x = 0; x < 240; x++) {
+            for (x = X0; x < X1; x++) {
                 if (!(s_obj[x] & OPAQUE) || s_obj_prio[x] != p) continue;
                 if (windowed && !(s_win[x] & 0x10u)) continue;
                 s_under[x] = s_top[x];
@@ -505,7 +538,7 @@ static void compose(u16 *out, const int *order, const int *prio, int n, u32 back
             }
         }
     }
-    for (x = 0; x < 240; x++) {
+    for (x = X0; x < X1; x++) {
         u32 c1 = s_top[x], c2 = s_under[x];
         int l1 = s_topl[x], l2 = s_underl[x];
         u32 wmask = windowed ? s_win[x] : 0x3Fu;
@@ -536,6 +569,13 @@ void rt_ppu_line(int y, u16 *out)
     u32 bmode = (bldcnt >> 6) & 3u;
     int order[4], prio[4], n = 0;
     int bg, x, k;
+    int X0, X1;
+    if (g_rt_ppu_ui) {          /* UI passes always cover the whole GBA screen */
+        g_rt_ppu_x0 = 0;
+        g_rt_ppu_x1 = 240;
+    }
+    X0 = g_rt_ppu_x0;
+    X1 = g_rt_ppu_x1;
     u32 backdrop = g_rt_ppu_ui ? RT_UI_CLEAR : PAL[0] & 0x7FFFu;
 
     if (eva > 16) eva = 16;
@@ -543,7 +583,7 @@ void rt_ppu_line(int y, u16 *out)
     if (evy > 16) evy = 16;
 
     if (dispcnt & 0x80u) {
-        for (x = 0; x < 240; x++) out[x] = g_rt_ppu_ui ? RT_UI_CLEAR : 0x7FFF;
+        for (x = X0; x < X1; x++) out[x] = g_rt_ppu_ui ? RT_UI_CLEAR : 0x7FFF;
         goto advance;
     }
     s_backmost_bg = -1;
@@ -592,18 +632,28 @@ void rt_ppu_line(int y, u16 *out)
         }
         objs = (dispcnt & 0x1000u) && s_obj_on_line;
         if (objs) {
-            for (x = 0; x < 240; x++)
+            for (x = X0; x < X1; x++)
                 if (s_obj_semi[x]) { semi = 1; break; }
         }
-        if (!windowed && bmode == 0 && !semi) {
-            /* fast path: paint layers back to front straight into the line */
+        if (!windowed && bmode != 1u) {
+            /* fast path: paint layers back to front straight into the line.
+             * With a fade (brighten/darken) or half-transparent sprites, keep
+             * which layer each pixel shows: the effects need only that and,
+             * for a half-transparent sprite, the colour already below it. */
             int p;
-            for (x = 0; x < 240; x++) out[x] = (u16)backdrop;
+            static u8 lay[240];
+            int track = semi || bmode != 0u;
+            for (x = X0; x < X1; x++) out[x] = (u16)backdrop;
+            if (track) {
+                memset(lay + X0, 5, (size_t)(X1 - X0));
+                s_paint_lay = lay;
+            }
             for (p = 3; p >= 0; p--) {
                 for (k = n - 1; k >= 0; k--) {
                     int b2 = order[k];
                     u32 cnt = IO16(0x08u + (u32)b2 * 2u);
                     if (prio[k] != p) continue;
+                    s_paint_id = (u8)b2;
                     if (kinds[b2] == 0 && !((cnt & 0x40u) && (mos & 15u))) {
                         text_bg_mode(b2, y, out, 1);
                     } else {
@@ -611,13 +661,38 @@ void rt_ppu_line(int y, u16 *out)
                         if (kinds[b2] == 0) text_bg(b2, y, s_bg[b2]);
                         else if (kinds[b2] == 1) affine_bg(b2, s_bg[b2]);
                         else bitmap_bg((int)mode, y, s_bg[b2]);
-                        for (x = 0; x < 240; x++)
-                            if (src[x] & OPAQUE) out[x] = (u16)(src[x] & 0x7FFFu);
+                        for (x = X0; x < X1; x++)
+                            if (src[x] & OPAQUE) {
+                                out[x] = (u16)(src[x] & 0x7FFFu);
+                                if (track) lay[x] = (u8)b2;
+                            }
                     }
                 }
                 if (objs) {
-                    for (x = 0; x < 240; x++)
-                        if ((s_obj[x] & OPAQUE) && s_obj_prio[x] == p) out[x] = (u16)(s_obj[x] & 0x7FFFu);
+                    if (!track) {
+                        for (x = X0; x < X1; x++)
+                            if ((s_obj[x] & OPAQUE) && s_obj_prio[x] == p) out[x] = (u16)(s_obj[x] & 0x7FFFu);
+                    } else {
+                        for (x = X0; x < X1; x++) {
+                            if (!(s_obj[x] & OPAQUE) || s_obj_prio[x] != p) continue;
+                            if (s_obj_semi[x] && (bldcnt & (0x100u << lay[x])) && !(g_rt_ppu_ui && lay[x] == 5)) {
+                                out[x] = blend_alpha(s_obj[x] & 0x7FFFu, out[x], eva, evb);
+                                lay[x] = 6;     /* blended: no other effect */
+                            } else {
+                                out[x] = (u16)(s_obj[x] & 0x7FFFu);
+                                lay[x] = 4;
+                            }
+                        }
+                    }
+                }
+            }
+            s_paint_lay = 0;
+            if (track && bmode >= 2u) {
+                for (x = X0; x < X1; x++) {
+                    int l = lay[x];
+                    if (l == 6 || !(bldcnt & (1u << l))) continue;
+                    if (l == 5 && g_rt_ppu_ui) continue;     /* UI pass: nothing drawn stays clear */
+                    out[x] = bmode == 2u ? brighten(out[x], evy) : darken(out[x], evy);
                 }
             }
         } else {

@@ -20,6 +20,7 @@ if(NOT NGAGESDK)
 endif()
 
 option(HAMTARO_BLUETOOTH "Bluetooth link cable (RFCOMM)" ON)
+option(HAMTARO_THUMB "compile the game code as Thumb (about a third smaller, a little slower)" OFF)
 
 file(GLOB GEN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gen/c/*.c)
 set(RT_SRC
@@ -39,6 +40,9 @@ add_library(hamtaro_game OBJECT ${GEN_SRC})
 target_include_directories(hamtaro_game PRIVATE runtime gen/c)
 set_target_properties(hamtaro_game PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 60 C_STANDARD 99)
 target_compile_options(hamtaro_game PRIVATE -fno-strict-aliasing)
+if(HAMTARO_THUMB)
+  target_compile_options(hamtaro_game PRIVATE -mthumb)
+endif()
 
 add_executable(hamtaro ngage/ngage_main.c ngage/splash_data.c ${RT_SRC} $<TARGET_OBJECTS:hamtaro_game>)
 target_include_directories(hamtaro PRIVATE runtime gen/c ngage)
@@ -67,6 +71,13 @@ endif()
 target_link_options(hamtaro PRIVATE "SHELL:-s UID1=0x1000007a")
 target_link_options(hamtaro PRIVATE "SHELL:-s UID2=0x100039ce")
 target_link_options(hamtaro PRIVATE "SHELL:-s UID3=0x1000c8f2")
+# Memory the phone must find when it starts the program, on top of the code
+# (~2 MiB) and static data (~1 MiB).  The toolchain's defaults (500 KB stack,
+# 1 MB initial heap) are more than this program needs: the game runs on its
+# own 160 KiB stack (rt_coro) and the heap grows as needed.  EKA2L1 does not
+# hold a program to these limits; the phone does.
+target_link_options(hamtaro PRIVATE "SHELL:-s STACK_SIZE=65536")
+target_link_options(hamtaro PRIVATE "SHELL:-s HEAP_START=131072")
 
 # Launcher (application UID 0x1000c8f1): made from the toolchain's own CC0
 # launcher, see tools/make_launcher.py; a prebuilt copy is the fallback.
